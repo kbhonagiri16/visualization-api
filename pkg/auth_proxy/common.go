@@ -26,6 +26,12 @@ const GrafanaRoleEditor = "Editor"
 //GrafanaRoleViewer Viewer
 const GrafanaRoleViewer = "Viewer"
 
+//UserExists Grafana
+const UserExists = "Exists"
+
+// SessionPassword key used for storing  password
+const SessionPassword = "PASSWORD"
+
 //TimeFormat used for cache expiration time representation
 const TimeFormat = time.RFC3339
 
@@ -36,6 +42,7 @@ func init() {
 
 // GrafanaUpdateCommand model for grafana roles for user
 type GrafanaUpdateCommand struct {
+	Exists        bool
 	User          User
 	Organizations []Organization
 }

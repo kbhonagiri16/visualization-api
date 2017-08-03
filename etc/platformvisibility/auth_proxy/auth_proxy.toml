@@ -1,6 +1,6 @@
 [openstack]
 # OpenStack Keystone endpoint
-auth_url="http://172.19.4.64:5000/v3"
+auth_url="http://172.0.0.40:5000/v3"
 # User with admin role in order to call 'openstack server list --all-projects'
 username="platform-visibility"
 password="123"
@@ -13,7 +13,7 @@ endpoint_type="internal"
 endpoint="http://localhost:9080/v1"
 
 [grafana]
-endpoint="http://localhost:3000/"
+endpoint="http://172.16.129.7:3000"
 auth_header="X-Webauth-User"
 
 [http_endpoint]

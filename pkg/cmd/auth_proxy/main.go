@@ -30,6 +30,33 @@ var (
 	versionParam = flag.Bool("version", false, "Prints version information")
 )
 
+// OpenstackConfigs for getting openstack token
+var OpenstackConfigs struct {
+	OpenstackEndpoint string
+	Username          string
+	Password          string
+	Domain            string
+	Project           string
+}
+
+func init() {
+	viper.SetConfigName("auth_proxy") // name of config file (without extension)
+	viper.AddConfigPath("./etc/platformvisibility/auth_proxy/")
+	viper.AddConfigPath("/etc/platformvisibility/auth_proxy/") // path to look for the config file in
+	err := viper.ReadInConfig()                                // Find and read the config file
+	if err != nil {                                            // Handle errors reading the config file
+		fmt.Printf("Fatal error config file: %s \n", err)
+		os.Exit(1)
+	}
+
+	// Openstack environment variables
+	flag.StringVar(&OpenstackConfigs.OpenstackEndpoint, "openstackEndpoint", viper.GetString("openstack.auth_url"), "Gets openstack endpoint")
+	flag.StringVar(&OpenstackConfigs.Username, "username", viper.GetString("openstack.username"), "Openstack username")
+	flag.StringVar(&OpenstackConfigs.Password, "password", viper.GetString("openstack.password"), "Openstack password")
+	flag.StringVar(&OpenstackConfigs.Domain, "domain", viper.GetString("openstack.domain_name"), "Openstack domain")
+	flag.StringVar(&OpenstackConfigs.Project, "project", viper.GetString("openstack.project_name"), "Openstack project")
+}
+
 func cleanupOnExit() {
 	// this function is used to perform all cleanup on application exit
 	// such as file descriptor close
@@ -59,7 +86,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	initConfig()
 	loggerInit()
 	log.Infof("auth_proxy version %s %s", version, gitVersion)
 	cleanupOnExit()
@@ -69,6 +95,7 @@ func main() {
 	requestLogging := viper.GetBool("log.request_logging")
 	authHeader := viper.GetString("grafana.auth_header")
 	loginPagePath := viper.GetString("http_endpoint.login_page")
+	visualizationEndpoint := viper.GetString("visualization_api.endpoint")
 
 	loginPage, err := ioutil.ReadFile(loginPagePath)
 	if err != nil {
@@ -94,14 +121,14 @@ func main() {
 	prx := middlewares.NewHandler(p)
 
 	//TODO(illia) get role mapping from config file
-	osHandler, err := proxy.NewOpenStackAuthHandler(loginPage, viper.GetInt("cookies.grafana_state_ttl"), nil)
+	osHandler, err := proxy.NewOpenStackAuthHandler(loginPage, viper.GetInt("cookies.grafana_state_ttl"), visualizationEndpoint, grafanaEndpoint, OpenstackConfigs, nil)
 
 	if err != nil {
-		log.Errorf("Can't initializa OpenStack middleware. err: %s", err)
+		log.Errorf("Can't initialize OpenStack middleware. err: %s", err)
 		os.Exit(0)
 	}
 
-	vapiM, err := proxy.NewVisualizationAPIMiddleware()
+	vapiM, err := proxy.NewVisualizationAPIMiddleware(viper.GetInt("cookies.grafana_state_ttl"), osHandler)
 	if err != nil {
 		log.Errorf("Can't initialize visualization middleware")
 		os.Exit(0)
@@ -118,17 +145,6 @@ func main() {
 
 	if err != nil {
 		log.Errorf("Error during creation HTTP server %s", err)
-	}
-}
-
-func initConfig() {
-	viper.SetConfigName("auth_proxy") // name of config file (without extension)
-	viper.AddConfigPath("./etc/platformvisibility/auth_proxy/")
-	viper.AddConfigPath("/etc/platformvisibility/auth_proxy/") // path to look for the config file in
-	err := viper.ReadInConfig()                                // Find and read the config file
-	if err != nil {                                            // Handle errors reading the config file
-		fmt.Printf("Fatal error config file: %s \n", err)
-		os.Exit(1)
 	}
 }
 

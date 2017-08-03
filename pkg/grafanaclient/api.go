@@ -1,4 +1,4 @@
-// Copyright © Mirantis.Inc 2017.
+// Copyright Mirantis.Inc 2017.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ type SessionInterface interface {
 	GetDataSourceList() ([]DataSource, error)
 	GetDataSourceListID(int) (DataSource, error)
 	GetUsers() ([]User, error)
+	GetUserName(string) (User, error)
 	GetUserID(int) (User, error)
 	CreateUser(AdminCreateUser) error
 	DeleteUser(int) error
@@ -189,6 +190,7 @@ type User struct {
 	Email string `json:"email"`
 	Name  string `json:"name"`
 	Login string `json:"login"`
+	OrgID int    `json:"orgID"`
 }
 
 // NewSession It returns a Session struct pointer.
@@ -373,8 +375,23 @@ func (s *Session) GetUsers() (user []User, err error) {
 	return
 }
 
+// GetUserName returns user by Name
+func (s *Session) GetUserName(name string) (user User, err error) {
+	users, err := s.GetUsers()
+	if err != nil {
+		return
+	}
+
+	for _, elem := range users {
+		if elem.Name == name {
+			user = elem
+		}
+	}
+	return
+}
+
 // GetUserID Get User by ID
-func (s *Session) GetUserID(ID int) (userID User, err error) {
+func (s *Session) GetUserID(ID int) (user User, err error) {
 	reqURL := fmt.Sprintf("%s/api/users/%d", s.url, ID)
 	body, err := s.httpRequest("GET", reqURL, nil)
 
@@ -391,7 +408,7 @@ func (s *Session) GetUserID(ID int) (userID User, err error) {
 		}
 	}
 	dec := json.NewDecoder(body)
-	err = dec.Decode(&userID)
+	err = dec.Decode(&user)
 	return
 }
 

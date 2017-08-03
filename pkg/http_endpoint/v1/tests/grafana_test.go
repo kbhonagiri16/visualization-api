@@ -703,8 +703,8 @@ func TestGrafanaUserGetID(t *testing.T) {
 	}{
 		{
 			description:    "Response Check",
-			expectedResult: grafanaclient.User{ID: 1, Name: "", Login: "admin", Email: "admin@localhost"},
-			output:         []byte(`{"userID":"1","name":"","login":"admin","email":"admin@localhost"}`),
+			expectedResult: grafanaclient.User{ID: 1, Name: "", Login: "admin", Email: "admin@localhost", OrgID: 1},
+			output:         []byte(`{"userID":"1","name":"","login":"admin","email":"admin@localhost","orgID":"1"}`),
 		},
 	}
 	testHelper.InitializeLogger()
@@ -819,7 +819,7 @@ func TestGrafanaOrganizationGetID(t *testing.T) {
 		{
 			description:    "Response Check",
 			expectedResult: grafanaclient.OrgList{ID: 1, Name: "Main Org."},
-			output:         []byte(`{"organizationID":1,"name":"Main Org."}`),
+			output:         []byte(`{"organizationID":"1","name":"Main Org."}`),
 		},
 	}
 	testHelper.InitializeLogger()
