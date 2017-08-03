@@ -123,12 +123,14 @@ func (h *V1Handler) GetUserID(clients *common.ClientContainer, ID int) ([]byte, 
 		Name   string `json:"name"`
 		Login  string `json:"login"`
 		Email  string `json:"email"`
+		OrgID  string `json:"orgID"`
 	}
 
 	users.UserID = strconv.Itoa(ID)
 	users.Name = userlist.Name
 	users.Login = userlist.Login
 	users.Email = userlist.Email
+	users.OrgID = strconv.Itoa(userlist.OrgID)
 
 	return json.Marshal(users)
 }
@@ -207,10 +209,10 @@ func (h *V1Handler) GetOrganizationID(clients *common.ClientContainer, ID int) (
 	}
 
 	var orgs struct {
-		OrganizationID int    `json:"organizationID"`
+		OrganizationID string `json:"organizationID"`
 		Name           string `json:"name"`
 	}
-	orgs.OrganizationID = orglist.ID
+	orgs.OrganizationID = strconv.Itoa(orglist.ID)
 	orgs.Name = orglist.Name
 
 	return json.Marshal(orgs)

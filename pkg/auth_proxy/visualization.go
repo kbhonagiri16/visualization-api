@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"github.com/kbhonagiri16/visualization-client"
 	"github.com/shuaiming/mung/middlewares"
 	"net/http"
 	log "visualization-api/pkg/logging"
@@ -9,12 +10,14 @@ import (
 // VisualizationAPIMiddleware creates users and organizations in Grafana
 // via visualization-api according to model in session
 type VisualizationAPIMiddleware struct {
+	grafanaStateTTL int
+	osHandler       *OpenStackAuthHandler
 }
 
 // NewVisualizationAPIMiddleware returns middleware for managing users and
 // organizations in Grafana via Visualization API
-func NewVisualizationAPIMiddleware() (*VisualizationAPIMiddleware, error) {
-	return &VisualizationAPIMiddleware{}, nil
+func NewVisualizationAPIMiddleware(grafanaStateTTL int, osHandler *OpenStackAuthHandler) (*VisualizationAPIMiddleware, error) {
+	return &VisualizationAPIMiddleware{grafanaStateTTL: grafanaStateTTL, osHandler: osHandler}, nil
 }
 
 func (vm *VisualizationAPIMiddleware) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
@@ -23,14 +26,27 @@ func (vm *VisualizationAPIMiddleware) ServeHTTP(rw http.ResponseWriter, r *http.
 
 	if cmd, ok := sess.Values[GrafanaUpdateCommandSessionKey]; ok {
 		log.Logger.Debugf("Visualization API command is %+v", cmd)
+		log.Logger.Debugf("GrafanaUpdateCommandSessionKey %+v", GrafanaUpdateCommandSessionKey)
 
-		//TODO(illia) code should be here :)
-		//creating everything here based on GrafanaUpdateCommand
+		username := sess.Values[SessionUsername]
+		password := sess.Values[SessionPassword]
+		isUserExists := sess.Values[UserExists]
 
-		// * check if user already exists in Grafana in order to not create it automatically
-		// * check if organizaton exists
-		// * give user roles
-		// * remove user's roles if needed
+		// Create User if not exitst
+		if isUserExists == false {
+			user := client.User{}
+			user.Name = username.(string)
+			user.Password = password.(string)
+			user.Login = username.(string)
+			user.Email = username.(string) + "@test.com"
+
+			// Create User
+			_, err := vm.osHandler.vclient.CreateUser(user)
+			if err != nil {
+				log.Logger.Errorf("Error creating user: %s", err)
+				return
+			}
+		}
 
 		delete(sess.Values, GrafanaUpdateCommandSessionKey)
 		//saving cookies/session

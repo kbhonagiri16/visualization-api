@@ -21,6 +21,7 @@ init:
 	$(GO) get github.com/pressly/chi
 	$(GO) get github.com/auth0/go-jwt-middleware
 	$(GO) get github.com/dgrijalva/jwt-go
+	$(GO) get github.com/kbhonagiri16/visualization-client
 	$(GO) get github.com/gophercloud/gophercloud
 	$(GO) get github.com/gophercloud/gophercloud/openstack
 	$(GO) get github.com/gophercloud/gophercloud/openstack/identity/v3/tokens
