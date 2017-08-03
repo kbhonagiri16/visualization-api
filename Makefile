@@ -21,6 +21,7 @@ init:
 	$(GO) get github.com/pressly/chi
 	$(GO) get github.com/auth0/go-jwt-middleware
 	$(GO) get github.com/dgrijalva/jwt-go
+	$(GO) get github.com/kbhonagiri16/visualization-client
 	$(GO) get github.com/gophercloud/gophercloud
 	$(GO) get github.com/gophercloud/gophercloud/openstack
 	$(GO) get github.com/gophercloud/gophercloud/openstack/identity/v3/tokens
@@ -33,6 +34,7 @@ init:
 	$(GO) get -u gopkg.in/alecthomas/gometalinter.v1
 	$(GO) get github.com/rubenv/sql-migrate/...
 	$(GO) get github.com/shuaiming/mung
+	$(GO) get github.com/shuaiming/middlewares
 	GOPATH=$(GOPATH) $(GOPATH)/bin/gometalinter.v1 --install
 	# as soon as our application does not use relative imports - source code
 	# has to be present in GOPATH to make lint work

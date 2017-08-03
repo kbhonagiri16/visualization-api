@@ -23,7 +23,7 @@ const ID = 1
 func TestGrafanaUsersGetHttp(t *testing.T) {
 	testHelper.InitializeLogger()
 
-	tests := []struct {
+	testCases := []struct {
 		description      string
 		secret           string
 		projectID        string
@@ -47,7 +47,7 @@ func TestGrafanaUsersGetHttp(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -73,7 +73,7 @@ func TestGrafanaUsersGetHttp(t *testing.T) {
 func TestGrafanaUserIDGetHttp(t *testing.T) {
 	testHelper.InitializeLogger()
 
-	tests := []struct {
+	testCases := []struct {
 		description      string
 		secret           string
 		projectID        string
@@ -107,7 +107,7 @@ func TestGrafanaUserIDGetHttp(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -138,7 +138,7 @@ func TestGrafanaUserIDGetHttp(t *testing.T) {
 func TestGrafanaUsersCreateHttp(t *testing.T) {
 	testHelper.InitializeLogger()
 
-	tests := []struct {
+	testCases := []struct {
 		description      string
 		secret           string
 		projectID        string
@@ -176,7 +176,7 @@ func TestGrafanaUsersCreateHttp(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -209,7 +209,7 @@ func TestGrafanaUsersCreateHttp(t *testing.T) {
 func TestGrafanaDeleteUserHttp(t *testing.T) {
 	testHelper.InitializeLogger()
 
-	tests := []struct {
+	testCases := []struct {
 		description      string
 		secret           string
 		projectID        string
@@ -243,7 +243,7 @@ func TestGrafanaDeleteUserHttp(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -273,7 +273,7 @@ func TestGrafanaDeleteUserHttp(t *testing.T) {
 func TestOrganizationsGetHttp(t *testing.T) {
 	testHelper.InitializeLogger()
 
-	tests := []struct {
+	testCases := []struct {
 		description      string
 		secret           string
 		projectID        string
@@ -296,7 +296,7 @@ func TestOrganizationsGetHttp(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -320,7 +320,7 @@ func TestOrganizationsGetHttp(t *testing.T) {
 func TestGrafanaOrganizationIDGetHttp(t *testing.T) {
 	testHelper.InitializeLogger()
 
-	tests := []struct {
+	testCases := []struct {
 		description      string
 		secret           string
 		projectID        string
@@ -354,7 +354,7 @@ func TestGrafanaOrganizationIDGetHttp(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -385,7 +385,7 @@ func TestGrafanaOrganizationIDGetHttp(t *testing.T) {
 func TestGrafanaOrganizationCreateHttp(t *testing.T) {
 	testHelper.InitializeLogger()
 
-	tests := []struct {
+	testCases := []struct {
 		description      string
 		secret           string
 		projectID        string
@@ -423,7 +423,7 @@ func TestGrafanaOrganizationCreateHttp(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -457,7 +457,7 @@ func TestGrafanaOrganizationCreateHttp(t *testing.T) {
 func TestGrafanaDeleteOrganizationHttp(t *testing.T) {
 	testHelper.InitializeLogger()
 
-	tests := []struct {
+	testCases := []struct {
 		description      string
 		secret           string
 		projectID        string
@@ -491,7 +491,7 @@ func TestGrafanaDeleteOrganizationHttp(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -521,7 +521,7 @@ func TestGrafanaDeleteOrganizationHttp(t *testing.T) {
 func TestGrafanaOrganizationUserIDGetHttp(t *testing.T) {
 	testHelper.InitializeLogger()
 
-	tests := []struct {
+	testCases := []struct {
 		description      string
 		secret           string
 		projectID        string
@@ -555,7 +555,7 @@ func TestGrafanaOrganizationUserIDGetHttp(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -587,7 +587,7 @@ func TestGrafanaOrganizationUserIDGetHttp(t *testing.T) {
 func TestGrafanaDeleteOrganizationUserHttp(t *testing.T) {
 	testHelper.InitializeLogger()
 
-	tests := []struct {
+	testCases := []struct {
 		description        string
 		secret             string
 		projectID          string
@@ -634,7 +634,7 @@ func TestGrafanaDeleteOrganizationUserHttp(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -667,7 +667,7 @@ func TestGrafanaDeleteOrganizationUserHttp(t *testing.T) {
 }
 
 func TestGrafanaUserGet(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description    string
 		expectedResult []grafanaclient.User
 		output         []byte
@@ -679,7 +679,7 @@ func TestGrafanaUserGet(t *testing.T) {
 		},
 	}
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
@@ -696,19 +696,19 @@ func TestGrafanaUserGet(t *testing.T) {
 }
 
 func TestGrafanaUserGetID(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description    string
 		expectedResult grafanaclient.User
 		output         []byte
 	}{
 		{
 			description:    "Response Check",
-			expectedResult: grafanaclient.User{ID: 1, Name: "", Login: "admin", Email: "admin@localhost"},
-			output:         []byte(`{"userID":"1","name":"","login":"admin","email":"admin@localhost"}`),
+			expectedResult: grafanaclient.User{ID: 1, Name: "", Login: "admin", Email: "admin@localhost", OrgID: 1},
+			output:         []byte(`{"userID":"1","name":"","login":"admin","email":"admin@localhost","orgID":"1"}`),
 		},
 	}
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
@@ -726,7 +726,7 @@ func TestGrafanaUserGetID(t *testing.T) {
 }
 
 func TestGrafanaUserCreate(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description string
 		input       grafanaclient.AdminCreateUser
 		params      []byte
@@ -738,7 +738,7 @@ func TestGrafanaUserCreate(t *testing.T) {
 		},
 	}
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
@@ -755,7 +755,7 @@ func TestGrafanaUserCreate(t *testing.T) {
 }
 
 func TestGrafanaUserDelete(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description    string
 		expectedResult error
 	}{
@@ -765,7 +765,7 @@ func TestGrafanaUserDelete(t *testing.T) {
 		},
 	}
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
@@ -781,7 +781,7 @@ func TestGrafanaUserDelete(t *testing.T) {
 }
 
 func TestGrafanaOrganizationGet(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description    string
 		expectedResult []grafanaclient.OrgList
 		output         []byte
@@ -793,7 +793,7 @@ func TestGrafanaOrganizationGet(t *testing.T) {
 		},
 	}
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
@@ -811,7 +811,7 @@ func TestGrafanaOrganizationGet(t *testing.T) {
 }
 
 func TestGrafanaOrganizationGetID(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description    string
 		expectedResult grafanaclient.OrgList
 		output         []byte
@@ -819,11 +819,11 @@ func TestGrafanaOrganizationGetID(t *testing.T) {
 		{
 			description:    "Response Check",
 			expectedResult: grafanaclient.OrgList{ID: 1, Name: "Main Org."},
-			output:         []byte(`{"organizationID":1,"name":"Main Org."}`),
+			output:         []byte(`{"organizationID":"1","name":"Main Org."}`),
 		},
 	}
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
@@ -841,7 +841,7 @@ func TestGrafanaOrganizationGetID(t *testing.T) {
 }
 
 func TestGrafanaOrganizationCreate(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description string
 		input       grafanaclient.Org
 		params      []byte
@@ -853,7 +853,7 @@ func TestGrafanaOrganizationCreate(t *testing.T) {
 		},
 	}
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
@@ -870,7 +870,7 @@ func TestGrafanaOrganizationCreate(t *testing.T) {
 }
 
 func TestGrafanaOrgDelete(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description    string
 		expectedResult error
 	}{
@@ -880,7 +880,7 @@ func TestGrafanaOrgDelete(t *testing.T) {
 		},
 	}
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
@@ -896,7 +896,7 @@ func TestGrafanaOrgDelete(t *testing.T) {
 }
 
 func TestGrafanaOrgUserGet(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description    string
 		expectedResult []grafanaclient.OrgUserList
 		output         []byte
@@ -908,7 +908,7 @@ func TestGrafanaOrgUserGet(t *testing.T) {
 		},
 	}
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
@@ -926,7 +926,7 @@ func TestGrafanaOrgUserGet(t *testing.T) {
 }
 
 func TestGrafanaOrgUserCreate(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description string
 		input       grafanaclient.CreateOrganizationUser
 		params      []byte
@@ -938,7 +938,7 @@ func TestGrafanaOrgUserCreate(t *testing.T) {
 		},
 	}
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
@@ -955,7 +955,7 @@ func TestGrafanaOrgUserCreate(t *testing.T) {
 }
 
 func TestGrafanaOrgUserDelete(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description    string
 		expectedResult error
 	}{
@@ -965,7 +965,7 @@ func TestGrafanaOrgUserDelete(t *testing.T) {
 		},
 	}
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 

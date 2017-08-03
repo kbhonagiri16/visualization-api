@@ -78,8 +78,9 @@ func (m *XORMManager) CreateVisualizationFromParam(name, organizationID string,
 		return nil, err
 	}
 
+	s, _ := uuid.NewV4()
 	visualization := &models.Visualization{
-		Slug:           uuid.NewV4().String(),
+		Slug:           s.String(),
 		Name:           name,
 		OrganizationID: organizationID,
 		Tags:           string(encodedTags),
@@ -295,9 +296,10 @@ func (m *XORMManager) CreateVisualizationsWithDashboards(name, organizationID st
 	}
 
 	var dashboards []*models.Dashboard
+	id, _ := uuid.NewV4()
 	for index, name := range dashboardNames {
 		dashboards = append(dashboards, &models.Dashboard{
-			ID:               uuid.NewV4().String(),
+			ID:               id.String(),
 			Visualization:    visualization.ID,
 			Name:             name,
 			RenderedTemplate: renderedTemplates[index],
