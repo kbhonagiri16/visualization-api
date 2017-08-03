@@ -25,7 +25,7 @@ const authSecret = "secret"
 
 func TestAuthEndpoint(t *testing.T) {
 
-	tests := []struct {
+	testCases := []struct {
 		description      string
 		authToken        string
 		provideAuthToken bool
@@ -49,7 +49,7 @@ func TestAuthEndpoint(t *testing.T) {
 	}
 
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -76,7 +76,7 @@ func TestAuthEndpoint(t *testing.T) {
 
 func TestAuthHandler(t *testing.T) {
 	parsedTime, _ := time.Parse(time.RFC3339, "2017-06-15T00:48:41Z")
-	tests := []struct {
+	testCases := []struct {
 		description    string
 		token          string
 		secret         string
@@ -108,7 +108,7 @@ func TestAuthHandler(t *testing.T) {
 	}
 
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 

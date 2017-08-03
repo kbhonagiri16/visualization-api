@@ -6,7 +6,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/shuaiming/mung/middlewares"
+	"github.com/shuaiming/middlewares"
 	log "visualization-api/pkg/logging"
 )
 

@@ -3,8 +3,9 @@ package v1handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ponzu-cms/ponzu/cmd/ponzu/vendor/github.com/satori/go.uuid"
 	"github.com/pressly/chi"
-	"github.com/satori/go.uuid"
+	//"github.com/satori/go.uuid"
 	"github.com/xeipuuv/gojsonschema"
 	"io/ioutil"
 	"net/http"

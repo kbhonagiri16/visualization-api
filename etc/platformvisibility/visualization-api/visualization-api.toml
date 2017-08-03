@@ -1,6 +1,6 @@
 [openstack]
 # OpenStack Keystone endpoint
-auth_url="http://172.19.4.64:5000/v3"
+auth_url="http://172.0.0.40:5000/v3"
 # User with admin role in order to call 'openstack server list --all-projects'
 username="platform-visibility"
 password="123"
@@ -21,7 +21,7 @@ password = "password"
 database = "visualization_api"
 
 [grafana]
-url = "http://172.18.236.207:3000"
+url = "http://172.16.129.7:3000"
 username = "admin"
 password = "admin"
 

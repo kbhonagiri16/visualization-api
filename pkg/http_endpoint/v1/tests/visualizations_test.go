@@ -24,7 +24,7 @@ import (
 
 func TestVisualizationsGetTagsAndName(t *testing.T) {
 
-	tests := []struct {
+	testCases := []struct {
 		description string
 		query       string
 		name        string
@@ -60,7 +60,7 @@ func TestVisualizationsGetTagsAndName(t *testing.T) {
 	const secret = "secret"
 
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -78,7 +78,7 @@ func TestVisualizationsGetTagsAndName(t *testing.T) {
 
 func TestVisualizationsGetResponses(t *testing.T) {
 
-	tests := []struct {
+	testCases := []struct {
 		description          string
 		tokenProvided        bool
 		expectedCode         int
@@ -127,7 +127,7 @@ func TestVisualizationsGetResponses(t *testing.T) {
 	const secret = "secret"
 
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -159,7 +159,7 @@ func TestVisualizationsGetResponses(t *testing.T) {
 
 func TestVisualizationDeleteUUIDArg(t *testing.T) {
 
-	tests := []struct {
+	testCases := []struct {
 		description          string
 		visualizationID      string
 		visualizationIDValid bool
@@ -183,7 +183,7 @@ func TestVisualizationDeleteUUIDArg(t *testing.T) {
 	const secret = "secret"
 
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -204,7 +204,7 @@ func TestVisualizationDeleteUUIDArg(t *testing.T) {
 }
 
 func TestVisualizationDeleteResponses(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description          string
 		tokenProvided        bool
 		visualizationID      string
@@ -290,7 +290,7 @@ func TestVisualizationDeleteResponses(t *testing.T) {
 	const secret = "secret"
 
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -322,7 +322,7 @@ func TestVisualizationDeleteResponses(t *testing.T) {
 }
 
 func TestVisualizationPostResponses(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		description          string
 		tokenProvided        bool
 		payloadProvided      string
@@ -465,7 +465,7 @@ func TestVisualizationPostResponses(t *testing.T) {
 	const secret = "secret"
 
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockedHandle := mock_common.NewMockHandlerInterface(mockCtrl)
@@ -500,7 +500,7 @@ func TestVisualizationPostResponses(t *testing.T) {
 }
 
 func TestVisualizationDashboardToResponse(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		visualization *models.Visualization
 		dashboards    []*models.Dashboard
 		result        *common.VisualizationWithDashboards
@@ -520,7 +520,7 @@ func TestVisualizationDashboardToResponse(t *testing.T) {
 	}
 
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		returnedResult := v1handlers.VisualizationDashboardToResponse(testCase.visualization, testCase.dashboards)
 		assert.Equal(t, testCase.result, returnedResult,
 			"result must match")
@@ -528,7 +528,7 @@ func TestVisualizationDashboardToResponse(t *testing.T) {
 }
 
 func TestGroupedVisualizationDashboardToResponse(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		inputDataMap *map[models.Visualization][]*models.Dashboard
 		result       *[]common.VisualizationWithDashboards
 	}{
@@ -549,7 +549,7 @@ func TestGroupedVisualizationDashboardToResponse(t *testing.T) {
 	}
 
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		returnedResult := v1handlers.GroupedVisualizationDashboardToResponse(testCase.inputDataMap)
 		assert.Equal(t, testCase.result, returnedResult,
 			"result must match")
@@ -557,7 +557,7 @@ func TestGroupedVisualizationDashboardToResponse(t *testing.T) {
 }
 
 func TestVisualizationsGetHandler(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		dbData        *map[models.Visualization][]*models.Dashboard
 		result        *[]common.VisualizationWithDashboards
 		name          string
@@ -600,7 +600,7 @@ func TestVisualizationsGetHandler(t *testing.T) {
 
 	const projectID = "3"
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		clientContainer := testHelper.MockClientContainer(mockCtrl)
@@ -623,7 +623,7 @@ func TestVisualizationsGetHandler(t *testing.T) {
 }
 
 func TestVisualizationsDeleteHandler(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		databaseVisualization *models.Visualization
 		databaseDashboards    []*models.Dashboard
 		result                *common.VisualizationWithDashboards
@@ -652,7 +652,7 @@ func TestVisualizationsDeleteHandler(t *testing.T) {
 
 	const projectID = "3"
 	testHelper.InitializeLogger()
-	for _, testCase := range tests {
+	for _, testCase := range testCases {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		clientContainer := testHelper.MockClientContainer(mockCtrl)
