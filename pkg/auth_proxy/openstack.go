@@ -2,9 +2,14 @@ package proxy
 
 import (
 	"fmt"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
+	"github.com/kbhonagiri16/visualization-client"
 	"github.com/shuaiming/mung/middlewares"
 	"net/http"
 	"time"
+	"visualization-api/pkg/grafanaclient"
 
 	log "visualization-api/pkg/logging"
 )
@@ -14,27 +19,96 @@ var (
 	DefaultOpenStackGrafanaRolesMapping = map[string]string{"admin": GrafanaRoleEditor,
 		"Member": GrafanaRoleReadOnlyEditor}
 )
+var visualizationEndpointURL = ""
+var InvalidToken = "InvalidToken"
+
+// OpenstackConfigs for getting openstack token
+type OpenstackConfigs struct {
+	OpenstackEndpoint string
+	Username          string
+	Password          string
+	Domain            string
+	Project           string
+}
 
 // OpenStackAuthHandler middleware for handling authentication via Keystone
 type OpenStackAuthHandler struct {
 	loginPage       []byte
 	grafanaStateTTL int
+	grafanaEndpoint string
+	vclient         *client.VisualizationClient
+	expiresAt       int64
+	openstackConfs  OpenstackConfigs
 	rolesMapping    map[string]string
 }
 
+// GetToken return openstack token
+func GetToken(openstackConfs OpenstackConfigs) (string, int64, error) {
+	// Authenticate with username and password
+	authOpts := gophercloud.AuthOptions{
+		IdentityEndpoint: openstackConfs.OpenstackEndpoint,
+		Username:         openstackConfs.Username,
+		Password:         openstackConfs.Password,
+		DomainName:       openstackConfs.Domain,
+	}
+
+	provider, err := openstack.AuthenticatedClient(authOpts)
+	if err != nil {
+		return InvalidToken, 0, err
+	}
+
+	clientIdentity, err := openstack.NewIdentityV3(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return InvalidToken, 0, err
+	}
+
+	// define token scope
+	scope := tokens.Scope{ProjectName: openstackConfs.Project, DomainName: openstackConfs.Domain}
+
+	opts := &tokens.AuthOptions{
+		IdentityEndpoint: openstackConfs.OpenstackEndpoint,
+		Username:         openstackConfs.Username,
+		Password:         openstackConfs.Password,
+		DomainName:       openstackConfs.Domain,
+		Scope:            scope,
+		AllowReauth:      false,
+	}
+	token, err := tokens.Create(clientIdentity, opts).ExtractToken()
+	if err != nil {
+		return InvalidToken, 0, err
+	}
+	openstackToken := token.ID
+	expiresAt := token.ExpiresAt.UnixNano() / int64(time.Millisecond)
+	return openstackToken, expiresAt, err
+}
+
 // NewOpenStackAuthHandler returns OpenStackAuthHandler
-func NewOpenStackAuthHandler(loginPage []byte, grafanaStateTTL int, rolesMapping map[string]string) (*OpenStackAuthHandler, error) {
+func NewOpenStackAuthHandler(loginPage []byte, grafanaStateTTL int, visualizationEndpoint string, grafanaEndpoint string, openstackConfs OpenstackConfigs, rolesMapping map[string]string) (*OpenStackAuthHandler, error) {
+	visualizationEndpointURL = visualizationEndpoint
+	openstackToken, expiresAt, err := GetToken(openstackConfs)
+	vclient, err := client.NewVisualizationClient(visualizationEndpoint, http.Client{}, openstackToken)
 	if rolesMapping == nil {
 		return &OpenStackAuthHandler{loginPage: loginPage,
-			grafanaStateTTL: grafanaStateTTL, rolesMapping: DefaultOpenStackGrafanaRolesMapping}, nil
+			grafanaStateTTL: grafanaStateTTL, grafanaEndpoint: grafanaEndpoint, vclient: vclient, expiresAt: expiresAt, openstackConfs: openstackConfs, rolesMapping: DefaultOpenStackGrafanaRolesMapping}, err
 	}
 	return &OpenStackAuthHandler{loginPage: loginPage,
-		grafanaStateTTL: grafanaStateTTL, rolesMapping: rolesMapping}, nil
+		grafanaStateTTL: grafanaStateTTL, grafanaEndpoint: grafanaEndpoint, vclient: vclient, expiresAt: expiresAt, openstackConfs: openstackConfs, rolesMapping: rolesMapping}, err
 }
 
 func (oh *OpenStackAuthHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	sess := middlewares.GetSession(r)
 	log.Logger.Debugf("Session values for request are %v", sess.Values)
+
+	// Validate Token
+	timeNow := time.Now().UnixNano() / int64(time.Millisecond)
+	if oh.expiresAt < timeNow {
+		authHandler, err := NewOpenStackAuthHandler(oh.loginPage, oh.grafanaStateTTL, oh.grafanaEndpoint, visualizationEndpointURL, oh.openstackConfs, oh.rolesMapping)
+		if err != nil {
+			log.Logger.Debugf("Error during getting openstack token err: %s", err)
+			return
+		}
+		authHandler.vclient = oh.vclient
+	}
 
 	if r.RequestURI == "/auth/openstack" {
 		if r.Method == http.MethodGet {
@@ -50,28 +124,89 @@ func (oh *OpenStackAuthHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 			username := r.FormValue("username")
 			password := r.FormValue("password")
 
-			ok, err := oh.authenticate(username, password)
-			if err != nil {
-				log.Logger.Infof("User %s is not authenticated. Due to err: %s", username, err)
-				http.Redirect(rw, r, "/auth/openstack", http.StatusInternalServerError)
-			}
-
-			if !ok {
-				log.Logger.Infof("User %s is not authenticated", username)
-				http.Redirect(rw, r, "/auth/openstack", http.StatusForbidden)
-			}
-
 			log.Logger.Debugf("%s is setting as '%s'", SessionUsername, username)
 
 			sess.Values[SessionUsername] = username
-			sess.Values[GrafanaUpdateCommandSessionKey], err = oh.getGrafanaUpdateCommand(username)
+			sess.Values[SessionPassword] = password
+
+			// Get the user by its name if exists
+			userGet, err := oh.vclient.GetUserName(username)
+			if err != nil {
+				log.Logger.Errorf("Error during getting User by Name err: %s", err)
+				return
+			}
+			user := client.User{}
+			var orgName string
+			var role string
+			var exists bool
+			if user == userGet {
+				role = GrafanaRoleViewer
+				// If user does not exists add it to main org with viewer role
+				orgName = "Main Org."
+				exists = false
+			} else {
+				log.Logger.Debugf("User exists in grafana")
+
+				// Check if openstack credentials are correct
+				ok, err := oh.authenticate(username)
+				if err != nil {
+					log.Logger.Infof("User %s is not authenticated. Due to err: %s", username, err)
+					http.Redirect(rw, r, "/auth/openstack", http.StatusInternalServerError)
+				}
+
+				if !ok {
+					log.Logger.Infof("User %s is not authenticated", username)
+					http.Redirect(rw, r, "/auth/openstack", http.StatusForbidden)
+				}
+				log.Logger.Debugf("Openstack User authenticated successfully")
+
+				// Check if grafana credentials are correct
+				okGrafana, err := oh.authenticateGrafana(username, password, oh.grafanaEndpoint)
+				if err != nil {
+					log.Logger.Infof("Grafana User %s is not authenticated. Due to err: %s", username, err)
+					http.Redirect(rw, r, "/auth/openstack", http.StatusInternalServerError)
+				}
+
+				if !okGrafana {
+					log.Logger.Infof("Grafana User %s is not authenticated", username)
+					http.Redirect(rw, r, "/auth/openstack", http.StatusForbidden)
+				}
+				log.Logger.Debugf("Grafana User authenticated successfully")
+
+				// If user exists get the organizationID
+				users, err := oh.vclient.GetUserID(userGet.UserID)
+				if err != nil {
+					log.Logger.Errorf("Error with getting User with ID: %s: %s", userGet.UserID, err)
+					return
+				}
+
+				// Get Organization name
+				orgs, err := oh.vclient.GetOrganizationID(users.OrgID)
+				if err != nil {
+					log.Logger.Errorf("Error with getting Organization with ID: %s: %s", users.OrgID, err)
+					return
+				}
+				orgName = orgs.Name
+
+				// Get user role
+				userDetails, err := oh.vclient.GetOrganizationUserID(users.OrgID, userGet.UserID)
+				if err != nil {
+					log.Logger.Errorf("Error with getting user role with ID %s: %s", userGet.UserID, err)
+					return
+				}
+				role = userDetails.Role
+				exists = true
+
+			}
+			sess.Values[GrafanaUpdateCommandSessionKey], err = oh.getGrafanaUpdateCommand(username, orgName, role, exists)
+			sess.Values[UserExists] = exists
 			sess.Values[OrgAndUserStateExpiresAt] = time.Now().
 				Add(time.Duration(oh.grafanaStateTTL) * time.Second).
 				Format(TimeFormat)
-
 			if err != nil {
-				log.Logger.Errorf("Can't create CGafanaUpdateCommand for user %s err: %s", username, err)
+				log.Logger.Errorf("Can't create GafanaUpdateCommand for user %s err: %s", username, err)
 			}
+
 			//saving cookies/session
 			err = sess.Save(r, rw)
 			if err != nil {
@@ -79,6 +214,7 @@ func (oh *OpenStackAuthHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 				http.Error(rw, "Internal error", http.StatusInternalServerError)
 				return
 			}
+
 			//We are good now 302 redirect
 			http.Redirect(rw, r, "/", http.StatusFound)
 			return
@@ -87,14 +223,14 @@ func (oh *OpenStackAuthHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 			http.Error(rw, "Unexpected method", http.StatusBadRequest)
 			return
 		}
-	}
 
+	}
 	if data, ok := sess.Values[SessionUsername]; ok {
 		// looks like user already authenticated, let us check how fresh
 		// is Grafana state
 		username := fmt.Sprintf("%s", data)
 
-		if _, ok := sess.Values[OrgAndUserStateExpiresAt]; !ok {
+		if _, ok = sess.Values[OrgAndUserStateExpiresAt]; !ok {
 			log.Logger.Errorf("%s key expected in session", OrgAndUserStateExpiresAt)
 			http.Error(rw, "Internal error", http.StatusInternalServerError)
 			return
@@ -112,7 +248,7 @@ func (oh *OpenStackAuthHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 		if time.Now().After(t) {
 			// grafana data is outdated let us refresh if
 			//TODO(illia) looks like code duplication. Should be refactored
-			sess.Values[GrafanaUpdateCommandSessionKey], err = oh.getGrafanaUpdateCommand(username)
+			sess.Values[GrafanaUpdateCommandSessionKey], err = oh.getGrafanaUpdateCommand(username, "Main Org.", GrafanaRoleViewer, true)
 			sess.Values[OrgAndUserStateExpiresAt] = time.Now().
 				Add(time.Duration(oh.grafanaStateTTL) * time.Second).
 				Format(TimeFormat)
@@ -121,7 +257,7 @@ func (oh *OpenStackAuthHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 				log.Logger.Errorf("Can't create GafanaUpdateCommand for user %s. err: %s", username, err)
 			}
 			//saving cookies/session
-			err := sess.Save(r, rw)
+			err = sess.Save(r, rw)
 			if err != nil {
 				log.Logger.Errorf("Error during updating session err: %s", err)
 				http.Error(rw, "Internal error", http.StatusInternalServerError)
@@ -138,17 +274,30 @@ func (oh *OpenStackAuthHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 	return
 }
 
-func (oh *OpenStackAuthHandler) getGrafanaUpdateCommand(user string) (GrafanaUpdateCommand, error) {
-	//TODO implement it
+func (oh *OpenStackAuthHandler) getGrafanaUpdateCommand(user string, org string, role string, exists bool) (GrafanaUpdateCommand, error) {
 	return GrafanaUpdateCommand{
+		exists,
 		User{
 			Login: user,
 		},
-		[]Organization{Organization{"ww", GrafanaRoleReadOnlyEditor}},
+		[]Organization{Organization{org, role}},
 	}, nil
 }
 
-func (oh *OpenStackAuthHandler) authenticate(user string, password string) (bool, error) {
+func (oh *OpenStackAuthHandler) authenticate(user string) (bool, error) {
 	//TODO implement it
+	return true, nil
+}
+
+func (oh *OpenStackAuthHandler) authenticateGrafana(user string, password string, url string) (bool, error) {
+	//TODO implement it
+	grafanaSession, err := grafanaclient.NewSession(user, password, url)
+	if err != nil {
+		return false, err
+	}
+	err = grafanaSession.DoLogon()
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
